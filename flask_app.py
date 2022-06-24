@@ -29,15 +29,16 @@ class Comment(db.Model):
 
 
 
-var_comments = []
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'GET':
-        return render_template('main_page.html', comments=var_comments)
+        return render_template('main_page.html', comments=Comment.query.all())
 
     else:
-        var_comments.append(request.form['harrie'])
+        comment = Comment(content=request.form['harrie'])
+        db.session.add(comment)
+        db.session.commit()
         return redirect(url_for('index'))
 
 
