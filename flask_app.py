@@ -17,8 +17,8 @@ SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://{username}:{password}@{hostnam
     username="menster",
     password="L0rdvader",
     hostname="menster.mysql.pythonanywhere-services.com",
-    #databasename="menster$comments",
-    databasename="menster$poepie",
+    databasename="menster$comments",
+    #databasename="menster$poepie",
 )
 app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
 app.config["SQLALCHEMY_POOL_RECYCLE"] = 299
@@ -70,6 +70,7 @@ class Comment(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.String(4096))
+    posted = db.Column(db.DateTime, default=datetime.now())
 
 
 
@@ -78,7 +79,7 @@ class Comment(db.Model):
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'GET':
-        return render_template('main_page.html', comments=Comment.query.all(), timestamp=datetime.now())
+        return render_template('main_page.html', comments=Comment.query.all())
 
     else:
         if not current_user.is_authenticated:
