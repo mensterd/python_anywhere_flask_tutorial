@@ -5,6 +5,7 @@ from flask import Flask, render_template, request, url_for, redirect
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import login_user, LoginManager, UserMixin, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
+from datetime import datetime
 
 
 app = Flask(__name__)
@@ -74,7 +75,7 @@ class Comment(db.Model):
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'GET':
-        return render_template('main_page.html', comments=Comment.query.all())
+        return render_template('main_page.html', comments=Comment.query.all(), timestamp=datetime.now())
 
     else:
         if not current_user.is_authenticated:
