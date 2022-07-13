@@ -5,7 +5,7 @@ from flask import Flask, render_template, request, url_for, redirect
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import login_user, LoginManager, UserMixin, logout_user, login_required, current_user
-from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.security import check_password_hash
 from datetime import datetime
 
 
@@ -36,10 +36,14 @@ login_manager.init_app(app)
 
 # User Class #############################################
 
-class User(UserMixin):
-    def __init__(self, username, password_hash):
-        self.username = username
-        self.password_hash = password_hash
+class User(UserMixin, db.Model):
+
+    __tablename__ = 'users'
+
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(128))
+    password_hash = db.Column(db.String(128))
+
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
@@ -49,16 +53,16 @@ class User(UserMixin):
 
 
 # Add Users ##################################################
-all_users = {
-        'admin': User('admin', generate_password_hash('secret')),
-        'bob': User('bob', generate_password_hash('less-secret')),
-        'Caroline': User('caroline', generate_password_hash('completelysecret')),
-        'menster': User('menster', generate_password_hash('Harrie'))
-    }
+# all_users = {
+#         'admin': User('admin', generate_password_hash('secret')),
+#         'bob': User('bob', generate_password_hash('less-secret')),
+#         'Caroline': User('caroline', generate_password_hash('completelysecret')),
+#         'menster': User('menster', generate_password_hash('Harrie'))
+#     }
 
 @login_manager.user_loader
 def load_user(user_id):
-    return all_users.get(user_id)
+    return User.query.filter_by(username=user_id).first()
 
 
 
@@ -96,13 +100,11 @@ def login():
     if request.method == 'GET':
         return render_template('login_page.html', error=False)
 
-    username = request.form['username']
-
-    if username not in all_users:
+    user = load_user(request.form['username'])
+    if user is None:
         return render_template('login_page.html', error=True)
 
-    # get the userobject from the lost
-    user = all_users[username]
+
 
     if not user.check_password(request.form['password']):
         return render_template('login_page.html', error=True)
