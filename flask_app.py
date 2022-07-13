@@ -75,6 +75,8 @@ class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.String(4096))
     posted = db.Column(db.DateTime, default=datetime.now())
+    commenter_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    commenter = db.relationship('User', foreign_keys=commenter_id)
 
 
 
@@ -88,7 +90,7 @@ def index():
     else:
         if not current_user.is_authenticated:
             return redirect(url_for('index'))
-        comment = Comment(content=request.form['harrie'])
+        comment = Comment(content=request.form['harrie'], commenter=current_user)
         db.session.add(comment)
         db.session.commit()
         return redirect(url_for('index'))
@@ -101,9 +103,9 @@ def login():
         return render_template('login_page.html', error=False)
 
     user = load_user(request.form['username'])
+
     if user is None:
         return render_template('login_page.html', error=True)
-
 
 
     if not user.check_password(request.form['password']):
